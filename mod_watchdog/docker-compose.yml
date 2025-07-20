@@ -1,0 +1,13 @@
+services:
+  watchdog:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/database
+    volumes:
+      - ../base/models.py:/app/base_models.py
+    networks:
+      - base_default
+
+networks:
+  base_default:
+    external: true

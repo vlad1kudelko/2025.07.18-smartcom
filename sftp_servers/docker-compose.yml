@@ -5,7 +5,6 @@ services:
       - "2222:22"
     volumes:
       - sftp_data:/home/testuser/upload
-      - ./ssh_keys:/etc/ssh/keys:ro
       - ./test_files:/home/testuser/upload/test_files:ro
     command: testuser:password:1001
     restart: always

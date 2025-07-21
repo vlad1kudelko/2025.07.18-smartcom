@@ -10,5 +10,11 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq/mnesia
+    networks:
+      - smartcom_network
 volumes:
   rabbitmq_data:
+
+networks:
+  smartcom_network:
+    external: true

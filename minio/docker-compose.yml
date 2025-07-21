@@ -11,6 +11,8 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+    networks:
+      - smartcom_network
 
   minio-client:
     image: minio/mc:latest
@@ -28,6 +30,12 @@ services:
        mc mb myminio/sftp-files --ignore-existing &&
        mc anonymous set download myminio/sftp-files &&
        echo 'MinIO setup completed'"
+    networks:
+      - smartcom_network
 
 volumes:
   minio_data:
+
+networks:
+  smartcom_network:
+    external: true

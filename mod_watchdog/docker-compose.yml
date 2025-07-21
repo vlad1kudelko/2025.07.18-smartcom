@@ -7,8 +7,8 @@ services:
     volumes:
       - ../base/models.py:/app/base_models.py
     networks:
-      - base_default
+      - smartcom_network
 
 networks:
-  base_default:
+  smartcom_network:
     external: true

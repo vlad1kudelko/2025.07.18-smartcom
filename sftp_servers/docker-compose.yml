@@ -10,6 +10,8 @@ services:
       - sftp_data:/home/testuser/upload
       - ./test_files:/home/testuser/upload/test_files:ro
     command: testuser:password:1001
+    networks:
+      - smartcom_network
 
   sftp-client:
     image: alpine:latest
@@ -28,6 +30,12 @@ services:
         echo 'Large test files created successfully!' &&
         tail -f /dev/null
       "
+    networks:
+      - smartcom_network
 
 volumes:
   sftp_data:
+
+networks:
+  smartcom_network:
+    external: true

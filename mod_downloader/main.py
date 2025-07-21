@@ -63,7 +63,7 @@ def send_amqp_message(message: dict):
         logger.error(f"Ошибка отправки AMQP сообщения: {e}")
 
 # Celery задача
-@celery_app.task(bind=True, max_retries=3)
+@celery_app.task(name="main.process_file", bind=True, max_retries=3)
 def process_file(self, file_id: int):
     db = SessionLocal()
     try:

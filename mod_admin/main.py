@@ -37,12 +37,12 @@ def get_db():
 async def admin_panel(request: Request):
     """Главная страница админки с таблицами серверов и файлов"""
     db = SessionLocal()
-    
+
     try:
         # Получаем данные из базы
         servers = db.query(Server).all()
         files = db.query(File).all()
-        
+
         return templates.TemplateResponse("admin.html", {
             "request": request,
             "servers": servers,
@@ -55,12 +55,12 @@ async def admin_panel(request: Request):
 async def get_data():
     """API endpoint для получения данных в формате JSON"""
     db = SessionLocal()
-    
+
     try:
         # Получаем данные из базы
         servers = db.query(Server).all()
         files = db.query(File).all()
-        
+
         # Преобразуем в JSON-совместимый формат
         servers_data = []
         for server in servers:
@@ -70,7 +70,7 @@ async def get_data():
                 "port": server.port,
                 "username": server.username
             })
-        
+
         files_data = []
         for file in files:
             files_data.append({
@@ -80,7 +80,7 @@ async def get_data():
                 "status": file.status,
                 "timestamp": file.timestamp.strftime('%Y-%m-%d %H:%M:%S') if file.timestamp else 'N/A'
             })
-        
+
         return JSONResponse({
             "servers": servers_data,
             "files": files_data
@@ -90,4 +90,4 @@ async def get_data():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,20 +1,15 @@
 services:
   sftp-server:
     image: atmoz/sftp:latest
+    restart: always
     ports:
       - "2222:22"
+    environment:
+      - SFTP_USERS=testuser:password:1001
     volumes:
       - sftp_data:/home/testuser/upload
       - ./test_files:/home/testuser/upload/test_files:ro
     command: testuser:password:1001
-    restart: always
-    environment:
-      - SFTP_USERS=testuser:password:1001
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "22"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   sftp-client:
     image: alpine:latest

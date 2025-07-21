@@ -22,9 +22,9 @@ services:
         apk add --no-cache openssh-client &&
         sleep 5 &&
         echo 'Creating large test files...' &&
-        dd if=/dev/urandom of=/test_files/large_file1.bin bs=1M count=1024 &&
-        dd if=/dev/urandom of=/test_files/large_file2.bin bs=1M count=1024 &&
-        dd if=/dev/urandom of=/test_files/large_file3.bin bs=1M count=1024 &&
+        if [ ! -f /test_files/large_file1.bin ]; then dd if=/dev/urandom of=/test_files/large_file1.bin bs=1M count=1024; fi && \
+        if [ ! -f /test_files/large_file2.bin ]; then dd if=/dev/urandom of=/test_files/large_file2.bin bs=1M count=1024; fi && \
+        if [ ! -f /test_files/large_file3.bin ]; then dd if=/dev/urandom of=/test_files/large_file3.bin bs=1M count=1024; fi && \
         echo 'Large test files created successfully!' &&
         tail -f /dev/null
       "

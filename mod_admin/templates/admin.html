@@ -79,7 +79,6 @@
     </style>
 </head>
 <body>
-    <div class="refresh-indicator" id="refreshIndicator">🔄 Обновлено</div>
     <div class="container">
         <h1>🖥️ SFTP Monitor - Admin Panel</h1>
         
@@ -173,9 +172,6 @@
                 // Обновляем таблицу файлов
                 updateFilesTable(files);
                 
-                // Показываем индикатор обновления
-                showRefreshIndicator();
-                
             } catch (error) {
                 console.error('Ошибка при обновлении данных:', error);
             }
@@ -235,15 +231,6 @@
                     <td>${file.timestamp || ''}</td>
                 </tr>
             `).join('');
-        }
-
-        // Показать индикатор обновления
-        function showRefreshIndicator() {
-            const indicator = document.getElementById('refreshIndicator');
-            indicator.classList.add('show');
-            setTimeout(() => {
-                indicator.classList.remove('show');
-            }, 2000);
         }
 
         // Автоматическое обновление каждые 5 секунд

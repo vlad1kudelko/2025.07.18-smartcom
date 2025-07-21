@@ -1,12 +1,12 @@
-import asyncio
-import paramiko
 import os
 import sys
+import time
 import logging
 from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from typing import List, Dict, Set
+from typing import List, Set
+import paramiko
 
 # Импортируем модели
 import importlib.util
@@ -29,7 +29,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 class SFTPWatchdog:
     def __init__(self):
         self.db = SessionLocal()
-        self.scan_interval = 15  # секунд
+        self.scan_interval = 5  # секунд
         
     def get_all_servers(self) -> List[models.Server]:
         """Получить все серверы из базы данных"""
@@ -146,23 +146,23 @@ class SFTPWatchdog:
         
         while True:
             try:
-                # Если серверов нет, останавливаемся
-                if not self.scan_all_servers():
-                    logger.info("Нет серверов для мониторинга.")
-                    break
-                
+                has_servers = self.scan_all_servers()
+                if not has_servers:
+                    logger.info(f"Нет серверов для мониторинга. Ожидание {self.scan_interval} секунд...")
+                    time.sleep(self.scan_interval)
+                    continue
                 logger.info(f"Сканирование завершено. Ожидание {self.scan_interval} секунд...")
-                asyncio.sleep(self.scan_interval)
+                time.sleep(self.scan_interval)
             except KeyboardInterrupt:
                 logger.info("Получен сигнал остановки")
                 break
             except Exception as e:
                 logger.error(f"Ошибка в основном цикле: {e}")
-                asyncio.sleep(self.scan_interval)
+                time.sleep(self.scan_interval)
         
         self.db.close()
         logger.info("SFTP Watchdog остановлен")
 
 if __name__ == "__main__":
     watchdog = SFTPWatchdog()
-    watchdog.run() 
+    watchdog.run()

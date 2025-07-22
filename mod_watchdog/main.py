@@ -27,6 +27,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/dat
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+SFTP_PATH = os.getenv("SFTP_PATH", "/upload/test_files")
+
 class SFTPWatchdog:
     def __init__(self):
         self.db = SessionLocal()
@@ -61,8 +63,10 @@ class SFTPWatchdog:
             logger.error(f"Ошибка подключения к серверу {server.hostname}:{server.port}: {e}")
             return None, None
     
-    def scan_sftp_directory(self, sftp: paramiko.SFTPClient, path: str = "/upload/test_files") -> List[str]:
+    def scan_sftp_directory(self, sftp: paramiko.SFTPClient, path: str = None) -> List[str]:
         """Сканировать директорию SFTP и получить список файлов"""
+        if path is None:
+            path = SFTP_PATH
         try:
             files = []
             for item in sftp.listdir_attr(path):

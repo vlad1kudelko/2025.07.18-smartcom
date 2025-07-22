@@ -4,6 +4,7 @@ services:
     restart: always
     environment:
       - DATABASE_URL=postgresql://user:password@db:5432/database
+      - SFTP_PATH=/upload/test_files
     volumes:
       - ../base/models.py:/app/base_models.py
     networks:

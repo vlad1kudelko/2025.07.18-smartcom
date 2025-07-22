@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -24,7 +23,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Настройки шаблонов
 templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 def get_db():
     db = SessionLocal()
@@ -37,12 +35,10 @@ def get_db():
 async def admin_panel(request: Request):
     """Главная страница админки с таблицами серверов и файлов"""
     db = SessionLocal()
-
     try:
         # Получаем данные из базы
         servers = db.query(Server).all()
         files = db.query(File).all()
-
         return templates.TemplateResponse("admin.html", {
             "request": request,
             "servers": servers,
@@ -55,12 +51,10 @@ async def admin_panel(request: Request):
 async def get_data():
     """API endpoint для получения данных в формате JSON"""
     db = SessionLocal()
-
     try:
         # Получаем данные из базы
         servers = db.query(Server).all()
         files = db.query(File).all()
-
         # Преобразуем в JSON-совместимый формат
         servers_data = []
         for server in servers:
@@ -70,7 +64,6 @@ async def get_data():
                 "port": server.port,
                 "username": server.username
             })
-
         files_data = []
         for file in files:
             files_data.append({
@@ -80,7 +73,6 @@ async def get_data():
                 "status": file.status,
                 "timestamp": file.timestamp.strftime('%Y-%m-%d %H:%M:%S') if file.timestamp else 'N/A'
             })
-
         return JSONResponse({
             "servers": servers_data,
             "files": files_data

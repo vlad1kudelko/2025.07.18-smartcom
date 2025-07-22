@@ -12,6 +12,7 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq/mnesia
     networks:
       - smartcom_network
+
 volumes:
   rabbitmq_data:
 

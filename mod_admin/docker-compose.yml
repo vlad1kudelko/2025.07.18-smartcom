@@ -8,7 +8,6 @@ services:
       - DATABASE_URL=postgresql://user:password@db:5432/database
     volumes:
       - ./templates:/app/templates
-      - ./static:/app/static
       - ../base/models.py:/app/base_models.py
     networks:
       - smartcom_network

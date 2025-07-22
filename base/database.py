@@ -6,7 +6,7 @@ import os
 
 # Настройки подключения к базе данных
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
+    "DATABASE_URL",
     "postgresql://user:password@localhost:5432/database"
 )
 
@@ -32,4 +32,4 @@ def get_db():
     try:
         yield db
     finally:
-        db.close() 
+        db.close()

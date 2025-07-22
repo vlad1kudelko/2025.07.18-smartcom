@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import List, Set
 import paramiko
+import stat
 
 # Импортируем модели
 import importlib.util
@@ -65,7 +66,7 @@ class SFTPWatchdog:
         try:
             files = []
             for item in sftp.listdir_attr(path):
-                if not item.st_mode & 0o40000:  # Проверяем, что это файл, а не директория
+                if not stat.S_ISDIR(item.st_mode):  # Проверяем, что это не директория (например, файл)
                     files.append(item.filename)
             logger.info(f"Найдено {len(files)} файлов в {path}")
             return files
@@ -94,31 +95,24 @@ class SFTPWatchdog:
     def scan_server(self, server: models.Server):
         """Сканировать один сервер"""
         logger.info(f"Сканирую сервер {server.hostname}:{server.port}")
-        
         # Подключаемся к SFTP
         sftp, transport = self.connect_to_sftp(server)
         if not sftp:
             return
-        
         try:
             # Получаем список файлов на сервере
             remote_files = self.scan_sftp_directory(sftp)
-            
             # Получаем список файлов, которые уже есть в базе
             existing_files = self.get_existing_files(server.id)
-            
             # Находим новые файлы
             new_files = set(remote_files) - existing_files
-            
             if new_files:
                 logger.info(f"Найдено {len(new_files)} новых файлов на сервере {server.hostname}")
-                
                 # Добавляем новые файлы в базу
                 for filename in new_files:
                     self.add_file_to_database(server.id, filename)
             else:
                 logger.info(f"Новых файлов на сервере {server.hostname} не найдено")
-                
         finally:
             # Закрываем соединение
             if transport:
@@ -132,18 +126,14 @@ class SFTPWatchdog:
         if not servers:
             logger.warning("Серверы не найдены в базе данных")
             return False
-        
         logger.info(f"Найдено {len(servers)} серверов для сканирования")
-        
         for server in servers:
             self.scan_server(server)
-        
         return True
     
     def run(self):
         """Основной цикл работы watchdog"""
         logger.info("Запуск SFTP Watchdog")
-        
         while True:
             try:
                 has_servers = self.scan_all_servers()
@@ -159,7 +149,6 @@ class SFTPWatchdog:
             except Exception as e:
                 logger.error(f"Ошибка в основном цикле: {e}")
                 time.sleep(self.scan_interval)
-        
         self.db.close()
         logger.info("SFTP Watchdog остановлен")
 

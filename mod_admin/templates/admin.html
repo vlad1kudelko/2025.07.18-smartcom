@@ -68,6 +68,13 @@
         <h1>🖥️ SFTP Monitor - Admin Panel</h1>
         <div class="section">
             <h2>📡 SFTP Серверы</h2>
+            <form id="addServerForm" style="margin-bottom:20px;display:flex;gap:10px;align-items:center;">
+                <input type="text" name="hostname" placeholder="Хост" required>
+                <input type="number" name="port" placeholder="Порт" required>
+                <input type="text" name="username" placeholder="Пользователь" required>
+                <input type="password" name="password" placeholder="Пароль" required>
+                <button type="submit">Добавить сервер</button>
+            </form>
             <div id="serversTableContainer"></div>
         </div>
         <div class="section">
@@ -96,15 +103,19 @@
                 return;
             }
             let html = '<table><thead><tr>' +
-                '<th>ID</th><th>Хост</th><th>Порт</th><th>Пользователь</th><th>Пароль</th>' +
+                '<th>ID</th><th>Хост</th><th>Порт</th><th>Пользователь</th><th>Пароль</th><th>Действия</th>' +
                 '</tr></thead><tbody>';
             html += servers.map(server => `
-                <tr>
+                <tr data-server-id="${server.id}">
                     <td>${server.id || ''}</td>
-                    <td>${server.hostname || ''}</td>
-                    <td>${server.port || ''}</td>
-                    <td>${server.username || ''}</td>
+                    <td><span class="hostname">${server.hostname || ''}</span></td>
+                    <td><span class="port">${server.port || ''}</span></td>
+                    <td><span class="username">${server.username || ''}</span></td>
                     <td>••••••••</td>
+                    <td>
+                        <button class="edit-server-btn">✏️</button>
+                        <button class="delete-server-btn">🗑️</button>
+                    </td>
                 </tr>
             `).join('');
             html += '</tbody></table>';
@@ -134,7 +145,68 @@
         }
 
         setInterval(refreshData, 5000);
-        document.addEventListener('DOMContentLoaded', refreshData);
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshData();
+            document.getElementById('addServerForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const form = e.target;
+                const formData = new FormData(form);
+                const response = await fetch('/api/servers', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    form.reset();
+                    refreshData();
+                } else {
+                    alert('Ошибка при добавлении сервера');
+                }
+            });
+        });
+
+        document.addEventListener('click', async function(e) {
+            if (e.target.classList.contains('delete-server-btn')) {
+                const tr = e.target.closest('tr');
+                const serverId = tr.getAttribute('data-server-id');
+                if (confirm('Удалить сервер?')) {
+                    const response = await fetch(`/api/servers/${serverId}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        refreshData();
+                    } else {
+                        alert('Ошибка при удалении сервера');
+                    }
+                }
+            }
+            if (e.target.classList.contains('edit-server-btn')) {
+                const tr = e.target.closest('tr');
+                const serverId = tr.getAttribute('data-server-id');
+                const hostname = tr.querySelector('.hostname').textContent;
+                const port = tr.querySelector('.port').textContent;
+                const username = tr.querySelector('.username').textContent;
+                const newHostname = prompt('Новый хост:', hostname);
+                if (newHostname === null) return;
+                const newPort = prompt('Новый порт:', port);
+                if (newPort === null) return;
+                const newUsername = prompt('Новый пользователь:', username);
+                if (newUsername === null) return;
+                const newPassword = prompt('Новый пароль:');
+                if (newPassword === null) return;
+                const formData = new FormData();
+                formData.append('hostname', newHostname);
+                formData.append('port', newPort);
+                formData.append('username', newUsername);
+                formData.append('password', newPassword);
+                const response = await fetch(`/api/servers/${serverId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+                if (response.ok) {
+                    refreshData();
+                } else {
+                    alert('Ошибка при изменении сервера');
+                }
+            }
+        });
     </script>
 </body>
 </html> 

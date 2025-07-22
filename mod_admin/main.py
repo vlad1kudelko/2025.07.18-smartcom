@@ -1,6 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse
+from fastapi import status
+from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
@@ -77,6 +79,47 @@ async def get_data():
             "servers": servers_data,
             "files": files_data
         })
+    finally:
+        db.close()
+
+@app.post("/api/servers")
+async def add_server(hostname: str = Form(...), port: int = Form(...), username: str = Form(...), password: str = Form(...)):
+    db = SessionLocal()
+    try:
+        new_server = Server(hostname=hostname, port=port, username=username, password=password)
+        db.add(new_server)
+        db.commit()
+        db.refresh(new_server)
+        return {"success": True, "server": {"id": new_server.id, "hostname": new_server.hostname, "port": new_server.port, "username": new_server.username}}
+    finally:
+        db.close()
+
+@app.put("/api/servers/{server_id}")
+async def update_server(server_id: int, hostname: str = Form(...), port: int = Form(...), username: str = Form(...), password: str = Form(...)):
+    db = SessionLocal()
+    try:
+        server = db.query(Server).filter(Server.id == server_id).first()
+        if not server:
+            raise HTTPException(status_code=404, detail="Server not found")
+        server.hostname = hostname
+        server.port = port
+        server.username = username
+        server.password = password
+        db.commit()
+        return {"success": True}
+    finally:
+        db.close()
+
+@app.delete("/api/servers/{server_id}")
+async def delete_server(server_id: int):
+    db = SessionLocal()
+    try:
+        server = db.query(Server).filter(Server.id == server_id).first()
+        if not server:
+            raise HTTPException(status_code=404, detail="Server not found")
+        db.delete(server)
+        db.commit()
+        return {"success": True}
     finally:
         db.close()
 
